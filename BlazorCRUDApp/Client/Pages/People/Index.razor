@@ -1,0 +1,88 @@
+﻿@page "/people"
+@inject HttpClient http
+@inject IJSRuntime js
+@using System.IO
+<h3>People</h3>
+
+<div>
+    <a class="btn btn-success" href="people/create">New Person</a>
+</div>
+
+
+@if (people == null)
+{
+    <text>Loading...</text>
+}
+else if (people.Length == 0)
+{
+    <text>There are not records in the database</text>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var person in people)
+            {
+                <tr>
+                    <td>
+                        <a class="btn btn-success" href="people/edit/@person.Id">Edit</a>
+                        <button class="btn btn-danger" @onclick="@(() => DeletePerson(person.Id))">Delete</button>
+                    </td>
+                    <td>@person.Id</td>
+                    <td>@person.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button @onclick="ExportAsCSV">Export as CSV</button>
+}
+
+@code {
+    Person[] people { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPeople();
+    }
+
+    async Task LoadPeople()
+    {
+        people = await http.GetJsonAsync<Person[]>("api/people");
+
+    }
+
+    async Task DeletePerson(int personId)
+    {
+        var personSelected = people.First(x => x.Id == personId);
+        if (await js.InvokeAsync<bool>("confirm", $"Do you want to delete {personSelected.Name}?"))
+        {
+            await http.DeleteAsync($"api/people/{personId}");
+            await LoadPeople();
+        }
+    }
+
+    private void ExportAsCSV()
+    {
+        using (var memoryStream = new MemoryStream())
+        {
+            using (var writer = new StreamWriter(memoryStream))
+            {
+                using (var csv = new CsvHelper.CsvWriter(writer))
+                {
+                    csv.WriteRecords(people);
+                }
+
+                var arr = memoryStream.ToArray();
+                js.SaveAs("people.csv", arr);
+            }
+        }
+    }
+}
