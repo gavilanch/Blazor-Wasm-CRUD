@@ -1,4 +1,6 @@
 ﻿using BlazorCRUDApp.Shared.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,6 +12,7 @@ namespace BlazorCRUDApp.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PeopleController: ControllerBase
     {
         private readonly ApplicationDbContext context;
@@ -20,12 +23,14 @@ namespace BlazorCRUDApp.Server.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Person>>> Get()
         {
             return await context.People.ToListAsync();
         }
 
         [HttpGet("{id}", Name ="GetPerson")]
+        [AllowAnonymous]
         public async Task<ActionResult<Person>> Get(int id)
         {
             return await context.People.FirstOrDefaultAsync(x => x.Id == id);

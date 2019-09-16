@@ -1,6 +1,8 @@
 ﻿@page "/people/create"
 @inject HttpClient http
 @inject NavigationManager uriHelper
+@attribute [Authorize]
+
 <h3>Create</h3>
 
 <PersonForm ButtonText="Create Person" Person="@person"

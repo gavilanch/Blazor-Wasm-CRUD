@@ -4,10 +4,13 @@
 @using System.IO
 <h3>People</h3>
 
-<div class="form-group">
-    <a class="btn btn-success" href="people/create">New Person</a>
-</div>
-
+<AuthorizeView>
+    <Authorized>
+        <div class="form-group">
+            <a class="btn btn-success" href="people/create">New Person</a>
+        </div>
+    </Authorized>
+</AuthorizeView>
 
 @if (people == null)
 {
@@ -32,8 +35,12 @@ else
             {
                 <tr>
                     <td>
-                        <a class="btn btn-success" href="people/edit/@person.Id">Edit</a>
-                        <button class="btn btn-danger" @onclick="@(() => DeletePerson(person.Id))">Delete</button>
+                        <AuthorizeView>
+                            <Authorized>
+                                <a class="btn btn-success" href="people/edit/@person.Id">Edit</a>
+                                <button class="btn btn-danger" @onclick="@(() => DeletePerson(person.Id))">Delete</button>
+                            </Authorized>
+                        </AuthorizeView>
                     </td>
                     <td>@person.Id</td>
                     <td>@person.Name</td>

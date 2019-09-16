@@ -1,6 +1,7 @@
 ﻿@page "/people/edit/{personId:int}"
 @inject HttpClient http
 @inject NavigationManager uriHelper
+@attribute [Authorize]
 
 <h3>Edit</h3>
 

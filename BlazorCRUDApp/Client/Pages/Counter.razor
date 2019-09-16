@@ -1,19 +1,48 @@
 ﻿@page "/counter"
+@attribute [Authorize]
+
 
 <h1>Counter</h1>
 
 <p>Current count: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<div>
+    <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+</div>
 
-<input type="number" @bind-value="currentCount" @bind-value:event="oninput"  />
+@*<AuthorizeView>
+    <Authorized>
+        <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+    </Authorized>
+    <NotAuthorized>
+        You are not authorized to do this
+    </NotAuthorized>
+    <Authorizing>
+        Authorizing...
+    </Authorizing>
+</AuthorizeView>*@
+
+<input type="number" @bind-value="currentCount" @bind-value:event="oninput" />
 
 @code {
+
+    [CascadingParameter] private Task<AuthenticationState> authenticationState { get; set; }
+
     int currentCount = 10;
     [Parameter] public int IncrementBy { get; set; } = 1;
 
-    void IncrementCount()
+    async Task IncrementCount()
     {
-        currentCount += IncrementBy;
+        var authState = await authenticationState;
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            currentCount += IncrementBy;
+            Console.WriteLine(user.Identity.Name);
+        }
+        else
+        {
+            currentCount -= IncrementBy;
+        }
     }
 }
