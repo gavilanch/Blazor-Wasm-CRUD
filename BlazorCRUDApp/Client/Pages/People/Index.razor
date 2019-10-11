@@ -12,48 +12,56 @@
     </Authorized>
 </AuthorizeView>
 
-@if (people == null)
-{
-    <text>Loading...</text>
-}
-else if (people.Length == 0)
-{
-    <text>There are not records in the database</text>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Id</th>
-                <th>Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var person in people)
-            {
+<GenericList Elements="people">
+    <NullTemplate>
+        <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" />
+    </NullTemplate>
+    <WithElementsTemplate>
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <AuthorizeView>
-                            <Authorized>
-                                <a class="btn btn-success" href="people/edit/@person.Id">Edit</a>
-                                <button class="btn btn-danger" @onclick="@(() => DeletePerson(person.Id))">Delete</button>
-                            </Authorized>
-                        </AuthorizeView>
-                    </td>
-                    <td>@person.Id</td>
-                    <td>@person.Name</td>
+                    <th></th>
+                    <th>Id</th>
+                    <th>Name</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var person in people)
+                {
+                    <tr>
+                        <td>
+                            <AuthorizeView>
+                                <Authorized>
+                                    <a class="btn btn-success" href="people/edit/@person.Id">Edit</a>
+                                    <button class="btn btn-danger" @onclick="@(() => DeletePerson(person.Id))">Delete</button>
+                                </Authorized>
+                            </AuthorizeView>
+                        </td>
+                        <td>@person.Id</td>
+                        <td>@person.Name</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-    <button @onclick="ExportAsCSV">Export as CSV</button>
-}
+        <button @onclick="ExportAsCSV">Export as CSV</button>
+    </WithElementsTemplate>
+</GenericList>
+
+@*<div>
+    <GenericList Elements="people">
+        <WithIndividualElementTemplate Context="person">
+            <div class="card">
+                <div class="card-body">
+                    @person.Name
+                </div>
+            </div>
+        </WithIndividualElementTemplate>
+    </GenericList>
+</div>*@
 
 @code {
-    Person[] people { get; set; }
+    List<Person> people { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -62,8 +70,8 @@ else
 
     async Task LoadPeople()
     {
-        people = await http.GetJsonAsync<Person[]>("api/people");
-
+        //await Task.Delay(4000);
+        people = await http.GetJsonAsync<List<Person>>("api/people");
     }
 
     async Task DeletePerson(int personId)

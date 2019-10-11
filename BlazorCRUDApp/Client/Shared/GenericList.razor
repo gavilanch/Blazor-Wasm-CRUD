@@ -1,0 +1,47 @@
+﻿@typeparam TElement
+
+@if (Elements == null)
+{
+    if (NullTemplate == null)
+    {
+        <text>Loading...</text>
+    }
+    else
+    {
+        @NullTemplate
+    }
+}
+else if (Elements.Count == 0)
+{
+    if (EmptyTemplate == null)
+    {
+        <text>There are not records in the database</text>
+    }
+    else
+    {
+        @EmptyTemplate
+    }
+}
+else
+{
+    if (WithElementsTemplate != null)
+    {
+        @WithElementsTemplate
+    }
+    else
+    {
+        foreach (var element in Elements)
+        {
+            @WithIndividualElementTemplate(element)
+        }
+    }
+}
+
+
+@code {
+    [Parameter] public List<TElement> Elements { get; set; }
+    [Parameter] public RenderFragment NullTemplate { get; set; }
+    [Parameter] public RenderFragment EmptyTemplate { get; set; }
+    [Parameter] public RenderFragment WithElementsTemplate { get; set; }
+    [Parameter] public RenderFragment<TElement> WithIndividualElementTemplate { get; set; }
+}
