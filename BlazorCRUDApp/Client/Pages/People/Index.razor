@@ -2,6 +2,7 @@
 @inject HttpClient http
 @inject IJSRuntime js
 @using System.IO
+@using System.Text.Json
 <h3>People</h3>
 
 <AuthorizeView>
@@ -11,6 +12,9 @@
         </div>
     </Authorized>
 </AuthorizeView>
+
+<Pagination TotaPagesQuantity="totalPageQuantity" CurrentPage="currentPage" Radius="2"
+            SelectedPage="SelectedPage"></Pagination>
 
 <GenericList Elements="people">
     <NullTemplate>
@@ -48,7 +52,7 @@
     </WithElementsTemplate>
 </GenericList>
 
-@*<div>
+<div style="display:none;">
     <GenericList Elements="people">
         <WithIndividualElementTemplate Context="person">
             <div class="card">
@@ -58,20 +62,40 @@
             </div>
         </WithIndividualElementTemplate>
     </GenericList>
-</div>*@
+</div>
 
 @code {
     List<Person> people { get; set; }
+    private int totalPageQuantity;
+    private int currentPage = 1;
+
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPeople();
     }
 
-    async Task LoadPeople()
+    private async Task SelectedPage(int page)
+    {
+        currentPage = page;
+        await LoadPeople(page);
+    }
+
+    async Task LoadPeople(int page = 1, int quantityPerPage = 10)
     {
         //await Task.Delay(4000);
-        people = await http.GetJsonAsync<List<Person>>("api/people");
+        var httpResponse = await http.GetAsync($"api/people?page={page}&quantityPerPage={quantityPerPage}");
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            totalPageQuantity = int.Parse(httpResponse.Headers.GetValues("pagesQuantity").FirstOrDefault());
+            var responseString = await httpResponse.Content.ReadAsStringAsync();
+            people = JsonSerializer.Deserialize<List<Person>>(responseString,
+                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        }
+        else
+        {
+            // handle error
+        }
     }
 
     async Task DeletePerson(int personId)
