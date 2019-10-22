@@ -13,6 +13,17 @@
     </Authorized>
 </AuthorizeView>
 
+<div class="form-inline">
+    <label class="sr-only" for="filter-name">Filter</label>
+    <input type="text" class="form-control mb-2 mr-sm-2"
+           @bind="nameFilter"
+           placeholder="Filter by name" />
+    <button type="button" class="btn btn-primary mr-sm-2 mb-2"
+            @onclick="Filter">Filter</button>
+    <button type="button" class="btn btn-danger mb-2"
+            @onclick="Clear">Clear</button>
+</div>
+
 <Pagination TotaPagesQuantity="totalPageQuantity" CurrentPage="currentPage" Radius="2"
             SelectedPage="SelectedPage"></Pagination>
 
@@ -68,7 +79,7 @@
     List<Person> people { get; set; }
     private int totalPageQuantity;
     private int currentPage = 1;
-
+    private string nameFilter = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,10 +92,23 @@
         await LoadPeople(page);
     }
 
+    private async Task Filter()
+    {
+        currentPage = 1;
+        await LoadPeople();
+    }
+
+    private async Task Clear()
+    {
+        nameFilter = string.Empty;
+        currentPage = 1;
+        await LoadPeople();
+    }
+
     async Task LoadPeople(int page = 1, int quantityPerPage = 10)
     {
         //await Task.Delay(4000);
-        var httpResponse = await http.GetAsync($"api/people?page={page}&quantityPerPage={quantityPerPage}");
+        var httpResponse = await http.GetAsync($"api/people?page={page}&quantityPerPage={quantityPerPage}&name={nameFilter}");
         if (httpResponse.IsSuccessStatusCode)
         {
             totalPageQuantity = int.Parse(httpResponse.Headers.GetValues("pagesQuantity").FirstOrDefault());
